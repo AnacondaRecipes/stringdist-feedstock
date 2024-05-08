@@ -1,0 +1,80 @@
+{% set name = "stringdist" %}
+{% set version = "1.0.9" %}
+
+package:
+  name: {{ name|lower }}
+  version: {{ version }}
+
+source:
+  # Source from the repository, to include tests and license file.
+  # There are no tags in the repository, therefore we use the last commit
+  git_url: https://github.com/obulkin/string-dist
+  git_tag: 38d04352d617a5d43b06832cc1bf0aee8978559f
+
+build:
+  number: 0
+  # py>311: stringdist as it is does not work with py312 for using deprecated Py_UNICODE
+  # which should be updated to PyUnicode_AsWideCharString().
+  # See e.g. https://github.com/giampaolo/psutil/issues/2252#issuecomment-1606095976
+  skip: true  # [py>311]
+  script: {{ PYTHON }} -m pip install . --no-deps --no-build-isolation -vv
+
+requirements:
+  build:
+    # win: Some of the included C code uses C99 syntax (e.g. variable length arrays, VLA)
+    # which are not supported by Microsoft compilers.
+    # See: https://stackoverflow.com/questions/5246900/enabling-vlas-variable-length-arrays-in-ms-visual-c
+    # Without compiler the build for Windows will fallback to the
+    # Python implementation
+    - {{ compiler('c') }}  # [not win]
+    - git                  # [not win]
+    - m2-git               # [win]
+  host:
+    - python
+    - pip
+    - setuptools
+    - wheel
+  run:
+    - python
+
+test:
+  imports:
+    - stringdist
+  requires:
+    - pip
+    - pytest
+  source_files:
+    - test_stringdist
+  commands:
+    - pip check
+    - pytest test_stringdist
+    # Test that the binaries are produced for osx and linux.
+    # For Windows there is no binary produced (see comment around the compiler).
+    # e.g. cstringdist.cpython-38-aarch64-linux-gnu.so
+    - compgen -G $SP_DIR/cstringdist.cpython-*-$(uname -p)-linux-gnu.so  # [linux]
+    # e.g. cstringdist.cpython-38-darwin.so
+    - compgen -G $SP_DIR/cstringdist.cpython-*-darwin.so  # [osx]
+
+about:
+  home: https://github.com/obulkin/string-dist
+  summary: This package provides the stringdist module, which includes several functions for calculating string distances.
+  description: |
+    This package provides the stringdist module, which includes functions for calculating raw and normalized versions 
+    of the following string distance measurements:
+
+      Levenshtein distance
+
+      Restricted Damerau-Levenshtein distance (a.k.a. optimal string alignment distance)
+
+    For optimal performance, the package compiles and uses a C extension module under the hood,
+    but a Python implementation is included as well and will automatically be used if C extensions
+    are not supported by the system (e.g. when the selected interpreter is PyPy).
+  license: MIT
+  license_file: LICENSE.txt
+  license_family: MIT
+  doc_url: https://github.com/obulkin/string-dist
+  dev_url: https://github.com/obulkin/string-dist
+
+extra:
+  recipe-maintainers:
+    - lorepirri
