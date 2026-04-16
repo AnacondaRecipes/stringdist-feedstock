@@ -1,4 +1,5 @@
 anaconda_config_version: 1
 upstream_sources:
-  - github:
-      identifier: obulkin/string-dist
+  - git:
+      identifier: https://github.com/obulkin/string-dist
+      use_commit: true
