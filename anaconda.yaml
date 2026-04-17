@@ -1,5 +1,4 @@
 anaconda_config_version: 1
 upstream_sources:
-  - git:
-      identifier: https://github.com/obulkin/string-dist
-      use_commit: true
+  - pypi:
+      identifier: StringDist
