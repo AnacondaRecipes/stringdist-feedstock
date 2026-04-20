@@ -1,4 +1,4 @@
 anaconda_config_version: 1
 upstream_sources:
-  - github:
-      identifier: obulkin/string-dist
+  - pypi:
+      identifier: StringDist
